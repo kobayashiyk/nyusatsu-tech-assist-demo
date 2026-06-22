@@ -45,6 +45,10 @@
   .card .sub{margin:0 0 18px;color:var(--slate);font-size:13.5px;}
   .step{display:none;}
   .step.show{display:block;animation:fade .25s ease;}
+  .topback{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--slate);
+    background:none;border:none;cursor:pointer;padding:4px 0;margin-bottom:10px;}
+  .topback:hover{color:var(--navy);}
+  .topback span{font-size:15px;}
   @keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
   label{display:block;font-size:12.5px;color:var(--muted);font-weight:700;margin:16px 0 5px;letter-spacing:.03em;}
@@ -216,6 +220,7 @@
   <!-- STEP 2 -->
   <section class="step" id="step2">
     <div class="card">
+      <button class="topback" data-back="1"><span>←</span> 案件入力に戻る</button>
       <h2>② 合う実績と技術者を選ぶ</h2>
       <p class="sub" id="s2sub">案件に合う実績をドライブから抽出しました。提案に載せる実績（複数可）と代表技術者を選んでください。<span style="color:var(--accent-d);font-weight:700">推奨</span>は自動でチェック済みです。</p>
 
@@ -238,6 +243,7 @@
   <!-- STEP 3 -->
   <section class="step" id="step3">
     <div class="card">
+      <button class="topback" data-back="2"><span>←</span> 実績の選択に戻る</button>
       <h2>③ 添付する図面を選ぶ</h2>
       <p class="sub">選んだ実績にひもづく図面をドライブから集めました。提出に添付する図面を選んでください（初期状態は全選択）。</p>
 
@@ -259,6 +265,7 @@
   <!-- STEP 4 -->
   <section class="step" id="step4">
     <div class="card">
+      <button class="topback" data-back="3"><span>←</span> 図面の選択に戻る</button>
       <h2>④ 圧縮＆技術提案の完成</h2>
       <p class="sub">図面を上限内に圧縮し、選んだ実績・技術者から技術提案を編成しました。提出様式の技術提案書を出力できます。</p>
 
