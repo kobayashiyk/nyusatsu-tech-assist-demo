@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>入札 技術提案アシスト ｜ 堤工業株式会社 導入デモ</title>
+<style>
+  :root{
+    --ink:#15212e;
+    --slate:#33495f;
+    --line:#d9e0e7;
+    --bg:#eef1f4;
+    --paper:#ffffff;
+    --navy:#1d3a5f;
+    --navy-d:#16304f;
+    --accent:#c2792b;      /* 建設らしい土色のアクセント */
+    --accent-d:#a5641f;
+    --good:#1f7a4d;
+    --good-bg:#e7f3ec;
+    --warn:#b5532a;
+    --muted:#6b7b8a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:"Yu Gothic","游ゴシック体",YuGothic,"Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+    color:var(--ink);
+    background:var(--bg);
+    font-size:15px;
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:0 20px 80px;}
+
+  /* ヘッダー */
+  header.top{
+    background:linear-gradient(180deg,var(--navy) 0%,var(--navy-d) 100%);
+    color:#fff;border-bottom:3px solid var(--accent);
+  }
+  .top-in{max-width:1280px;margin:0 auto;padding:16px 20px;display:flex;align-items:center;gap:16px;}
+  .logo{display:flex;flex-direction:column;line-height:1.25;}
+  .logo b{font-size:18px;letter-spacing:.04em;}
+  .logo span{font-size:12px;color:#b9c8d8;letter-spacing:.08em;}
+  .top-spacer{flex:1;}
+  .top-tag{font-size:12.5px;color:#cdd9e6;border:1px solid #3c5a7d;border-radius:4px;padding:4px 10px;}
+  .top-client{font-size:13px;color:#e7eef5;}
+  .top-client b{color:#fff;}
+
+  /* セクション見出し */
+  .lead{padding:26px 0 10px;}
+  .lead h1{font-size:22px;margin:0 0 6px;letter-spacing:.02em;}
+  .lead p{margin:0;color:var(--slate);font-size:14px;}
+
+  .stepbar{display:flex;gap:8px;margin:16px 0 22px;flex-wrap:wrap;}
+  .stepbar .s{flex:1;min-width:180px;background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:11px 14px;display:flex;gap:10px;align-items:flex-start;}
+  .stepbar .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;}
+  .stepbar .t b{display:block;font-size:13.5px;}
+  .stepbar .t span{font-size:12px;color:var(--muted);}
+
+  .grid{display:grid;grid-template-columns:300px 1fr 1fr;gap:18px;align-items:start;}
+  @media(max-width:1080px){.grid{grid-template-columns:1fr;}}
+
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:10px;overflow:hidden;}
+  .card > h2{
+    margin:0;font-size:14px;letter-spacing:.03em;padding:12px 16px;
+    background:#f4f6f9;border-bottom:1px solid var(--line);color:var(--slate);
+    display:flex;align-items:center;gap:8px;
+  }
+  .card > h2 .pill{margin-left:auto;font-size:11px;font-weight:700;color:#fff;background:var(--good);border-radius:20px;padding:2px 9px;}
+  .card .body{padding:14px 16px;}
+
+  /* ドライブ列 */
+  .drive-src{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--slate);background:#f6f8fa;border:1px dashed #cbd5df;border-radius:7px;padding:8px 11px;margin-bottom:12px;}
+  .drive-src .dot{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px var(--good-bg);}
+  .ds-h{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.08em;margin:14px 0 6px;}
+  .rec{border:1px solid var(--line);border-radius:7px;padding:9px 11px;margin-bottom:8px;cursor:default;transition:.15s;}
+  .rec:hover{border-color:var(--navy);background:#f8fafc;}
+  .rec b{font-size:13px;display:block;}
+  .rec .meta{font-size:11.5px;color:var(--muted);margin-top:2px;}
+  .rec .tags{margin-top:6px;display:flex;flex-wrap:wrap;gap:4px;}
+  .tag{font-size:10.5px;background:#eef2f6;color:var(--slate);border-radius:4px;padding:1px 6px;}
+  .tag.q{background:#fbf1e3;color:var(--accent-d);}
+
+  /* 案件入力 */
+  label{display:block;font-size:12px;color:var(--muted);font-weight:700;margin:12px 0 4px;letter-spacing:.04em;}
+  select,input,textarea{
+    width:100%;font:inherit;font-size:13.5px;color:var(--ink);
+    border:1px solid var(--line);border-radius:7px;padding:8px 10px;background:#fff;
+  }
+  select:focus,input:focus,textarea:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(29,58,95,.12);}
+  .eval-list{margin-top:10px;}
+  .ev{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:7px;padding:8px 11px;margin-bottom:7px;background:#fff;}
+  .ev input[type=checkbox]{width:auto;}
+  .ev .lab{flex:1;font-size:13px;}
+  .ev .wt{font-size:11px;color:var(--muted);}
+  .ev .pts{font-size:12px;font-weight:700;color:var(--navy);}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:16px;
+    background:var(--accent);color:#fff;border:none;border-radius:8px;padding:12px;font-size:14.5px;font-weight:700;
+    letter-spacing:.04em;cursor:pointer;transition:.15s;}
+  .btn:hover{background:var(--accent-d);}
+  .btn:active{transform:translateY(1px);}
+
+  /* 提案アウトプット */
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:40px 10px;line-height:1.9;}
+  .empty .ico{font-size:26px;color:#b9c4cf;}
+
+  .score-head{display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:6px;}
+  .score-big{font-size:34px;font-weight:800;color:var(--navy);line-height:1;}
+  .score-big small{font-size:14px;color:var(--muted);font-weight:600;}
+  .score-meta{font-size:12.5px;color:var(--slate);}
+  .score-meta b{color:var(--good);}
+
+  .crit{border:1px solid var(--line);border-radius:8px;margin:10px 0;overflow:hidden;}
+  .crit .ch{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#f6f8fa;border-bottom:1px solid var(--line);}
+  .crit .ch b{font-size:13px;flex:1;}
+  .crit .ch .gain{font-size:12px;font-weight:700;color:var(--good);background:var(--good-bg);border-radius:20px;padding:2px 9px;}
+  .crit .cb{padding:10px 12px;font-size:13px;}
+  .crit .pick{display:flex;gap:8px;align-items:flex-start;background:#fbfdff;border:1px solid #e3ebf2;border-radius:6px;padding:8px 10px;margin-top:6px;}
+  .crit .pick .k{font-size:11px;color:var(--muted);font-weight:700;flex:none;width:78px;}
+  .crit .pick .v{font-size:12.5px;color:var(--ink);}
+  .crit .reason{font-size:12px;color:var(--slate);margin-top:7px;padding-left:2px;}
+  .crit .reason::before{content:"加点根拠 ／ ";color:var(--accent-d);font-weight:700;}
+
+  .draft{border:1px solid var(--line);border-radius:8px;margin-top:16px;}
+  .draft h3{margin:0;font-size:13px;background:var(--navy);color:#fff;padding:9px 12px;border-radius:8px 8px 0 0;letter-spacing:.04em;display:flex;align-items:center;}
+  .draft h3 .cp{margin-left:auto;font-size:11px;font-weight:600;color:#cdd9e6;cursor:pointer;border:1px solid #3c5a7d;border-radius:4px;padding:2px 8px;}
+  .draft .dtext{padding:14px 15px;font-size:13px;line-height:1.95;white-space:pre-wrap;background:#fff;border-radius:0 0 8px 8px;color:#1d2b39;}
+  .draft .dtext h4{font-size:13px;color:var(--navy);margin:14px 0 4px;border-left:3px solid var(--accent);padding-left:8px;}
+  .note{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.7;}
+  .flag{display:inline-block;font-size:11px;color:var(--warn);background:#fbeee7;border:1px solid #f0d6c6;border-radius:5px;padding:2px 8px;margin-top:4px;}
+
+  /* 規模要件入力 */
+  .volrow{display:flex;align-items:center;gap:8px;background:#f6f8fa;border:1px solid var(--line);border-radius:7px;padding:8px 10px;font-size:12.5px;color:var(--slate);}
+  .volrow .vl{flex:none;}
+  .volrow input{width:90px;text-align:right;padding:5px 8px;font-size:13px;}
+  .volrow .un{flex:none;color:var(--muted);font-size:12px;}
+  .volrow .hint{flex:1;text-align:right;font-size:11px;color:var(--muted);}
+
+  /* 評価指標バー */
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:4px 0 12px;}
+  @media(max-width:560px){.kpis{grid-template-columns:1fr;}}
+  .kpi{border:1px solid var(--line);border-radius:8px;padding:8px 11px;}
+  .kpi .kt{font-size:11.5px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px;}
+  .kpi .kv{font-size:14px;font-weight:700;color:var(--ink);margin-top:2px;}
+  .kpi .kv small{font-size:11.5px;color:var(--muted);font-weight:600;}
+  .kpi .bar{height:6px;border-radius:4px;background:#eaeef2;margin-top:7px;overflow:hidden;}
+  .kpi .bar i{display:block;height:100%;border-radius:4px;background:var(--navy);}
+  .kpi.ok .bar i{background:var(--good);} .kpi.ok .judge{color:var(--good);}
+  .kpi.ng .bar i{background:var(--warn);} .kpi.ng .judge{color:var(--warn);}
+  .kpi .judge{font-size:11px;font-weight:700;margin-top:5px;}
+
+  /* 図面集約・圧縮 */
+  .dwgcard{margin-top:18px;}
+  .dwg-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start;}
+  @media(max-width:900px){.dwg-grid{grid-template-columns:1fr;}}
+  .dwg-list .empty{padding:30px 10px;}
+  .dwgrow{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:7px;padding:8px 11px;margin-bottom:7px;}
+  .dwgrow .fi{flex:none;width:30px;height:34px;border-radius:4px;background:#eef2f6;color:var(--slate);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .dwgrow .nm{flex:1;font-size:13px;}
+  .dwgrow .nm small{display:block;color:var(--muted);font-size:11px;}
+  .dwgrow .sz{font-size:12.5px;font-weight:700;color:var(--slate);text-align:right;min-width:118px;}
+  .dwgrow .sz .after{color:var(--good);} .dwgrow .sz .arrow{color:var(--muted);margin:0 4px;}
+  .dwgrow.heavy .fi{background:#fbf1e3;color:var(--accent-d);}
+
+  .compbox{background:#f6f8fa;border:1px solid var(--line);border-radius:10px;padding:14px 15px;position:sticky;top:14px;}
+  .compbox h4{margin:0 0 10px;font-size:13px;color:var(--slate);}
+  .gauge{margin:10px 0 6px;}
+  .gauge .lab{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;}
+  .gauge .lab b{font-weight:700;}
+  .gtrack{height:14px;border-radius:8px;background:#e3e8ee;overflow:hidden;position:relative;}
+  .gtrack i{display:block;height:100%;transition:width .6s ease;}
+  .gtrack .limit{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink);left:100%;}
+  .gtrack.over i{background:var(--warn);} .gtrack.under i{background:var(--good);}
+  .lim-note{font-size:11px;color:var(--muted);text-align:right;margin-top:3px;}
+  .comp-stat{display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-top:1px solid var(--line);margin-top:8px;}
+  .comp-stat b{font-weight:700;}
+  .comp-stat .red{color:var(--warn);} .comp-stat .grn{color:var(--good);}
+  .btn.sm{margin-top:12px;padding:10px;font-size:13.5px;background:var(--navy);}
+  .btn.sm:hover{background:var(--navy-d);}
+  .comp-log{font-size:11.5px;color:var(--slate);margin-top:10px;line-height:1.75;}
+  .comp-log div{padding-left:14px;position:relative;}
+  .comp-log div::before{content:"›";position:absolute;left:2px;color:var(--good);font-weight:700;}
+
+  footer{margin-top:40px;text-align:center;color:var(--muted);font-size:12px;}
+  footer b{color:var(--slate);}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="logo"><b>入札 技術提案アシスト</b><span>BID PROPOSAL ASSIST ／ 総合評価落札方式 対応</span></div>
+    <div class="top-spacer"></div>
+    <div class="top-tag">導入デモ版</div>
+    <div class="top-client">提案先：<b>堤工業株式会社</b> 様（福岡県柳川市）</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="lead">
+    <h1>過去の施工実績を「最も加点される形」で、技術提案書に自動編成</h1>
+    <p>社内ドライブに蓄積された工事実績・配置技術者・施工計画を読み取り、案件ごとの評価項目に合わせて最適な実績を選定。総合評価方式の技術点を引き上げるドラフトを生成します。</p>
+  </div>
+
+  <div class="stepbar">
+    <div class="s"><div class="n">1</div><div class="t"><b>ドライブ取り込み</b><span>過去の竣工書類・技術者台帳を構造化</span></div></div>
+    <div class="s"><div class="n">2</div><div class="t"><b>案件の評価項目を入力</b><span>発注機関・工種・配点を指定</span></div></div>
+    <div class="s"><div class="n">3</div><div class="t"><b>最適実績を自動選定</b><span>配点が最大化される実績・技術者を抽出</span></div></div>
+    <div class="s"><div class="n">4</div><div class="t"><b>技術提案書ドラフト</b><span>加点根拠つきで自動生成・人が監修</span></div></div>
+  </div>
+
+  <div class="grid">
+
+    <!-- 1. ドライブ -->
+    <div class="card">
+      <h2>社内ドライブ（取り込み済）<span class="pill" id="recCount">— 件</span></h2>
+      <div class="body">
+        <div class="drive-src"><span class="dot"></span>共有ドライブ ／ 工事実績・技術者台帳 を自動同期</div>
+
+        <div class="ds-h">工事実績データベース</div>
+        <div id="projList"></div>
+
+        <div class="ds-h">配置可能 技術者台帳</div>
+        <div id="engList"></div>
+      </div>
+    </div>
+
+    <!-- 2. 案件入力 -->
+    <div class="card">
+      <h2>新規案件の評価項目</h2>
+      <div class="body">
+        <label>発注機関</label>
+        <select id="agency">
+          <option>福岡県（県土整備部）</option>
+          <option>国土交通省 九州地方整備局</option>
+          <option>柳川市</option>
+          <option>福岡県 道路公社</option>
+        </select>
+
+        <label>工事名 ／ 工種</label>
+        <select id="kind">
+          <option value="river">沖端川 河川改修工事（築堤・護岸）</option>
+          <option value="bridge">県道○○線 橋梁補修工事（鋼橋）</option>
+          <option value="steel">排水機場 水門設備設置工事（鋼構造物）</option>
+          <option value="dredge">矢部川 河道掘削・しゅんせつ工事</option>
+          <option value="pave">市道△△線 舗装打換え工事</option>
+        </select>
+
+        <label>総合評価タイプ</label>
+        <select id="evtype">
+          <option value="kani">簡易型（施工実績・技術者中心）</option>
+          <option value="hyojun">標準型（施工計画・品質確保を含む）</option>
+        </select>
+
+        <label>規模要件（発注条件のボリューム）</label>
+        <div id="volReq"></div>
+
+        <label>評価項目（加点配点）</label>
+        <div class="eval-list" id="evalList"></div>
+
+        <button class="btn" id="genBtn">技術提案書ドラフトを生成する</button>
+      </div>
+    </div>
+
+    <!-- 3-4. 出力 -->
+    <div class="card">
+      <h2>自動編成された技術提案 ＆ ドラフト</h2>
+      <div class="body" id="output">
+        <div class="empty"><div class="ico">▤</div>左の案件を設定し、「ドラフトを生成する」を押してください。<br>評価項目ごとに最適な実績・技術者を選び、加点根拠つきで提案を組み立てます。</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 図面集約・圧縮（フル幅） -->
+  <div class="card dwgcard">
+    <h2>図面の自動収集 ＆ 容量圧縮<span class="pill" id="dwgPill" style="background:var(--accent)">電子入札 添付用</span></h2>
+    <div class="body">
+      <div class="dwg-grid">
+        <div class="dwg-list" id="dwgList">
+          <div class="empty" style="text-align:center;color:var(--muted);font-size:13px;">案件を生成すると、ドライブから関連図面を自動収集します。</div>
+        </div>
+        <div class="compbox">
+          <h4>容量上限への圧縮</h4>
+          <div class="gauge">
+            <div class="lab"><span>合計サイズ</span><b id="gTotal">— MB</b></div>
+            <div class="gtrack under" id="gTrack"><i id="gFill" style="width:0%"></i><span class="limit"></span></div>
+            <div class="lim-note">上限 <b id="limitVal">10</b> MB（電子入札 添付上限）</div>
+          </div>
+          <div class="comp-stat"><span>圧縮前</span><b id="cBefore" class="red">— MB</b></div>
+          <div class="comp-stat"><span>圧縮後</span><b id="cAfter" class="grn">— MB</b></div>
+          <button class="btn sm" id="compBtn" disabled>10MB以下に自動圧縮</button>
+          <div class="comp-log" id="compLog"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <b>入札 技術提案アシスト</b> 導入デモ ／ 株式会社サファリテック ｜ 本デモのデータは説明用のサンプルです（実在の入札・実績ではありません）
+  </footer>
+</div>
+
+<script>
+/* ============ サンプルデータ（堤工業の工種に即したダミー） ============ */
+const KINDS = {
+  river:  {label:"河川改修（築堤・護岸）",  family:["river","dredge"]},
+  bridge: {label:"橋梁補修（鋼橋）",        family:["bridge","steel"]},
+  steel:  {label:"鋼構造物（水門・設備）",  family:["steel","bridge"]},
+  dredge: {label:"河道掘削・しゅんせつ",    family:["dredge","river"]},
+  pave:   {label:"舗装打換え",              family:["pave"]},
+};
+
+/* 工事実績DB（社内ドライブ想定）
+   score=工事成績評定点 / vol=規模(面積㎡・延長m) / gate=ゲート空間面積㎡ / pave=舗装区分
+   dwgs=ドライブ内の図面ファイル（name, mb=元サイズ, dpiHeavy=高解像度スキャンで圧縮余地大） */
+const PROJECTS = [
+  {id:"p1", name:"二ツ川 床上浸水対策 築堤護岸工事", kind:"river",  client:"福岡県", year:2023, amount:"2.4億円", grade:"優良工事表彰", score:84,
+    vol:{type:"length", val:420, unit:"m", area:5800}, detail:"出水期を回避した分割施工で工期内完了。ブロック積護岸 L=420m。", tags:["河川","護岸","優良表彰","県発注"],
+    dwgs:[{name:"位置図・平面図.pdf",mb:6.2,dpiHeavy:true},{name:"標準横断図.pdf",mb:9.4,dpiHeavy:true},{name:"護岸構造詳細図.pdf",mb:5.1,dpiHeavy:true},{name:"仮設計画図.pdf",mb:3.0,dpiHeavy:false}]},
+  {id:"p2", name:"矢部川水系 河道掘削・しゅんせつ工事", kind:"dredge", client:"九州地方整備局", year:2022, amount:"1.1億円", grade:"成績80点", score:80,
+    vol:{type:"volume", val:38000, unit:"m3", area:0}, detail:"濁水処理を徹底し環境基準を遵守。掘削土量 38,000m3。", tags:["しゅんせつ","掘削","国交省","環境配慮"],
+    dwgs:[{name:"掘削平面図.pdf",mb:7.8,dpiHeavy:true},{name:"土量計算図.pdf",mb:4.4,dpiHeavy:true},{name:"濁水処理計画図.pdf",mb:2.6,dpiHeavy:false}]},
+  {id:"p3", name:"県道 鋼橋 塗装塗替・断面修復工事", kind:"bridge", client:"福岡県", year:2024, amount:"0.9億円", grade:"成績82点", score:82,
+    vol:{type:"area", val:3200, unit:"m2", area:3200}, detail:"活線下の交通規制計画で苦情ゼロ。鉛含有塗膜の適正処理。", tags:["橋梁","鋼橋","補修","交通規制"],
+    dwgs:[{name:"橋梁一般図.pdf",mb:8.9,dpiHeavy:true},{name:"塗装範囲図.pdf",mb:5.7,dpiHeavy:true},{name:"交通規制図.pdf",mb:4.2,dpiHeavy:false}]},
+  {id:"p4", name:"排水機場 主ゲート（水門）設置工事", kind:"steel",  client:"柳川市", year:2023, amount:"1.6億円", grade:"成績79点", score:79,
+    vol:{type:"area", val:0, unit:"m2", area:0}, gate:46.5, detail:"工場製作と現地据付の精度管理。ゲート据付精度 ±2mm以内。ゲート空間 純径間6.2m×高7.5m。", tags:["鋼構造物","水門","据付","品質管理"],
+    dwgs:[{name:"ゲート構造図.pdf",mb:9.8,dpiHeavy:true},{name:"据付要領図.pdf",mb:6.3,dpiHeavy:true},{name:"機側操作盤図.pdf",mb:3.4,dpiHeavy:false},{name:"工場製作図.pdf",mb:7.1,dpiHeavy:true}]},
+  {id:"p5", name:"市道 舗装打換え（排水性舗装）工事", kind:"pave",   client:"柳川市", year:2024, amount:"0.4億円", grade:"成績78点", score:78,
+    vol:{type:"area", val:6200, unit:"m2", area:6200}, pave:"打換え", detail:"夜間施工で供用への影響を最小化。As舗装 6,200m2。", tags:["舗装","夜間施工","排水性","打換え"],
+    dwgs:[{name:"舗装平面図.pdf",mb:5.5,dpiHeavy:true},{name:"舗装構成図.pdf",mb:2.2,dpiHeavy:false}]},
+  {id:"p7", name:"バイパス 道路改良（舗装新設）工事", kind:"pave",   client:"福岡県", year:2022, amount:"1.3億円", grade:"成績81点", score:81,
+    vol:{type:"area", val:14800, unit:"m2", area:14800}, pave:"新設", detail:"新設区間 L=1.2km、路体盛土から一貫施工。As舗装 14,800m2。", tags:["舗装","新設","道路改良","県発注"],
+    dwgs:[{name:"道路平面図.pdf",mb:8.4,dpiHeavy:true},{name:"縦断図.pdf",mb:6.0,dpiHeavy:true},{name:"舗装構成・横断図.pdf",mb:4.8,dpiHeavy:true}]},
+  {id:"p6", name:"沖端川 緊急災害復旧（護岸崩壊）工事", kind:"river",  client:"福岡県", year:2023, amount:"0.7億円", grade:"災害協定 出動", score:83,
+    vol:{type:"length", val:85, unit:"m", area:1100}, detail:"災害協定に基づき72時間以内に応急復旧へ着手。", tags:["河川","災害復旧","地域貢献","協定出動"],
+    dwgs:[{name:"被災状況図.pdf",mb:4.6,dpiHeavy:true},{name:"応急復旧計画図.pdf",mb:3.3,dpiHeavy:false}]},
+];
+
+/* 技術者台帳　point=配置技術者の能力点（同種実績・資格・成績の社内評価） */
+const ENGINEERS = [
+  {id:"e1", name:"原口 健一", role:"監理技術者", lic:"1級土木施工管理技士", cpd:true, point:9,
+    exp:["river","dredge"], hist:"河川・護岸 同種12件", note:"二ツ川築堤工事で優良工事表彰の主任", tags:["1級土木","CPD認定","同種河川"]},
+  {id:"e2", name:"江崎 亮",   role:"監理技術者", lic:"1級土木施工管理技士", cpd:true, point:8,
+    exp:["steel","bridge"], hist:"鋼構造物・橋梁 同種9件", note:"水門据付・鋼橋補修の実績多数", tags:["1級土木","CPD認定","同種鋼構造"]},
+  {id:"e3", name:"中村 大輔", role:"主任技術者", lic:"2級土木施工管理技士", cpd:false, point:6,
+    exp:["pave","dredge"], hist:"舗装・掘削 同種7件", note:"夜間舗装の安全管理に強み", tags:["2級土木","同種舗装"]},
+];
+
+/* 工種ごとの規模要件（発注条件のボリューム）デフォルト */
+const VOLREQ = {
+  river:  {vl:"施工延長",   key:"length", def:200,   unit:"m 以上"},
+  bridge: {vl:"対象面積",   key:"area",   def:2000,  unit:"m2 以上"},
+  steel:  {vl:"ゲート空間面積", key:"gate", def:40,   unit:"m2 以上"},
+  dredge: {vl:"掘削土量",   key:"volume", def:20000, unit:"m3 以上"},
+  pave:   {vl:"舗装面積",   key:"area",   def:5000,  unit:"m2 以上"},
+};
+
+/* 発注機関ごとの技術評価点（加算点）の満点 ＝ リアルな数字感に合わせる
+   100点満点換算スコアを、実際の加算点に換算して併記する */
+const REAL_MAX = {
+  "福岡県（県土整備部）":        {kani:20, hyojun:35},
+  "国土交通省 九州地方整備局":  {kani:30, hyojun:50},
+  "柳川市":                     {kani:15, hyojun:25},
+  "福岡県 道路公社":            {kani:20, hyojun:30},
+};
+
+/* 評価項目テンプレ（タイプ別） */
+const EVAL_TEMPLATES = {
+  kani:[
+    {id:"jisseki", lab:"企業の同種工事施工実績", pts:30, on:true},
+    {id:"gijutsusha", lab:"配置予定技術者の能力（同種実績・資格）", pts:30, on:true},
+    {id:"seiseki", lab:"工事成績・優良工事表彰", pts:25, on:true},
+    {id:"chiiki", lab:"地域貢献（災害協定・地元実績）", pts:15, on:true},
+  ],
+  hyojun:[
+    {id:"jisseki", lab:"企業の同種工事施工実績", pts:25, on:true},
+    {id:"gijutsusha", lab:"配置予定技術者の能力（同種実績・資格）", pts:25, on:true},
+    {id:"keikaku", lab:"施工計画の妥当性（工程・品質確保）", pts:20, on:true},
+    {id:"anzen", lab:"安全・環境への配慮", pts:15, on:true},
+    {id:"chiiki", lab:"地域貢献（災害協定・地元実績）", pts:15, on:true},
+  ],
+};
+
+/* ============ 描画 ============ */
+function el(html){const t=document.createElement("template");t.innerHTML=html.trim();return t.content.firstChild;}
+
+function renderDrive(){
+  const pl=document.getElementById("projList"); pl.innerHTML="";
+  PROJECTS.forEach(p=>{
+    pl.appendChild(el(`<div class="rec"><b>${p.name}</b>
+      <div class="meta">${p.client}・${p.year}年・${p.amount}</div>
+      <div class="tags">${p.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div></div>`));
+  });
+  const eg=document.getElementById("engList"); eg.innerHTML="";
+  ENGINEERS.forEach(e=>{
+    eg.appendChild(el(`<div class="rec"><b>${e.name}　<span style="font-weight:400;color:var(--muted);font-size:11.5px">${e.role}</span></b>
+      <div class="meta">${e.lic}・${e.hist}</div>
+      <div class="tags">${e.tags.map(t=>`<span class="tag q">${t}</span>`).join("")}</div></div>`));
+  });
+  document.getElementById("recCount").textContent = (PROJECTS.length+ENGINEERS.length)+" 件";
+}
+
+function renderVolReq(){
+  const kindKey=document.getElementById("kind").value;
+  const r=VOLREQ[kindKey];
+  const box=document.getElementById("volReq");
+  box.innerHTML=`<div class="volrow">
+    <span class="vl">${r.vl}</span>
+    <input type="number" id="volVal" value="${r.def}">
+    <span class="un">${r.unit}</span>
+    <span class="hint">発注公告の規模条件を入力</span>
+  </div>`;
+  if(kindKey==="pave"){
+    box.innerHTML+=`<div class="volrow" style="margin-top:7px;">
+      <span class="vl">舗装区分</span>
+      <select id="paveReq" style="width:auto;flex:1;">
+        <option value="新設">新設</option><option value="打換え">打換え</option>
+      </select></div>`;
+  }
+}
+function getReq(){
+  const kindKey=document.getElementById("kind").value;
+  const r=VOLREQ[kindKey];
+  const val=parseFloat(document.getElementById("volVal").value)||r.def;
+  const pave=document.getElementById("paveReq")?document.getElementById("paveReq").value:null;
+  return {key:r.key, val, unit:r.unit.replace(" 以上",""), label:r.vl, pave};
+}
+
+function renderEval(){
+  const type=document.getElementById("evtype").value;
+  const list=document.getElementById("evalList"); list.innerHTML="";
+  EVAL_TEMPLATES[type].forEach(ev=>{
+    const row=el(`<div class="ev">
+      <input type="checkbox" id="ck_${ev.id}" ${ev.on?"checked":""}>
+      <span class="lab">${ev.lab}</span>
+      <span class="pts">${ev.pts}点</span></div>`);
+    list.appendChild(row);
+  });
+}
+
+/* ============ マッチングロジック ============ */
+/* 実績の規模指標を、案件の要件種別に合わせて取り出す */
+function projMetric(p, req){
+  if(req.key==="length") return p.vol&&p.vol.type==="length"?p.vol.val:0;
+  if(req.key==="volume") return p.vol&&p.vol.type==="volume"?p.vol.val:0;
+  if(req.key==="gate")   return p.gate||0;
+  return p.vol?p.vol.area:0; // area
+}
+function bestProject(kindKey, prefClient){
+  const fam = KINDS[kindKey].family;
+  const req = getReq();
+  let scored = PROJECTS.map(p=>{
+    let s=0, why=[];
+    if(p.kind===kindKey){ s+=10; why.push("完全同種"); }
+    else if(fam.includes(p.kind)){ s+=6; why.push("同系統"); }
+    // 工事成績評定点（竣工後に付与）を実績選定の主要因子に
+    s += (p.score-75)*0.5;                  // 75点基準。84点→+4.5、78点→+1.5
+    if(p.score>=80) why.push("高評点"+p.score);
+    if(p.grade.includes("表彰")){ s+=3; why.push("優良表彰"); }
+    // 案件のボリューム要件を満たす実績を優先
+    const m = projMetric(p, req);
+    if(req.val>0){ if(m>=req.val){ s+=4; why.push("規模要件充足"); } else { s-=2; } }
+    if(p.client===prefClient){ s+=2; why.push("同一発注機関"); }
+    if(p.tags.includes("災害復旧")||p.tags.includes("地域貢献")){ s+=1; }
+    return {p,s,why};
+  }).sort((a,b)=>b.s-a.s);
+  return scored;
+}
+function bestEngineer(kindKey){
+  const fam=KINDS[kindKey].family;
+  return ENGINEERS.map(e=>{
+    let s=0;
+    if(e.exp.includes(kindKey)) s+=10;
+    else if(e.exp.some(x=>fam.includes(x))) s+=6;
+    if(e.lic.includes("1級")) s+=4;
+    if(e.cpd) s+=2;
+    return {e,s};
+  }).sort((a,b)=>b.s-a.s);
+}
+
+/* ============ 生成 ============ */
+function generate(){
+  const agency=document.getElementById("agency").value;
+  const kindKey=document.getElementById("kind").value;
+  const kindLabel=document.querySelector("#kind option:checked").textContent;
+  const type=document.getElementById("evtype").value;
+  const checks=EVAL_TEMPLATES[type].filter(ev=>document.getElementById("ck_"+ev.id).checked);
+
+  const projRank=bestProject(kindKey, agency);
+  const topProj=projRank[0].p, altProj=projRank[1]?projRank[1].p:null;
+  const engRank=bestEngineer(kindKey);
+  const topEng=engRank[0].e;
+
+  // スコア試算（選定が満点近く取れる前提の見込み）
+  let max=0, got=0;
+  const crits=[];
+  checks.forEach(ev=>{
+    max+=ev.pts;
+    let gain=ev.pts, pick="", reason="", flag="";
+    if(ev.id==="jisseki"){
+      const exact = topProj.kind===kindKey;
+      gain = exact?ev.pts:Math.round(ev.pts*0.7);
+      pick = `${topProj.name}（${topProj.client}・${topProj.year}年・${topProj.amount}）`;
+      reason = exact
+        ? `本案件と完全同種。${topProj.detail}`
+        : `同系統の実績として最も近い。完全同種が無いため一部減点の見込み。`;
+      if(!exact) flag="完全同種の実績が手薄 → 早めにJV/協力会社の同種実績で補完を検討";
+    } else if(ev.id==="gijutsusha"){
+      const exact = topEng.exp.includes(kindKey);
+      gain = (exact && topEng.lic.includes("1級"))?ev.pts:Math.round(ev.pts*0.75);
+      pick = `${topEng.name}（${topEng.role}・${topEng.lic}${topEng.cpd?"・CPD認定":""}）`;
+      reason = `${topEng.hist}。${topEng.note}。同種工事の配置で技術者評価を最大化。`;
+    } else if(ev.id==="seiseki"){
+      const award = PROJECTS.find(p=>p.grade.includes("表彰") && (p.kind===kindKey||KINDS[kindKey].family.includes(p.kind)));
+      gain = award?ev.pts:Math.round(ev.pts*0.6);
+      pick = award? `${award.name}（${award.grade}）` : `直近の高評点工事を提示`;
+      reason = award? `同種分野での優良工事表彰を実績証明として添付。` : `表彰実績は別分野のため、工事成績評定点で訴求。`;
+    } else if(ev.id==="chiiki"){
+      const dis = PROJECTS.find(p=>p.tags.includes("災害復旧")||p.tags.includes("地域貢献"));
+      gain = dis?ev.pts:Math.round(ev.pts*0.5);
+      pick = dis? `${dis.name}（${dis.grade}）／ 柳川市内 地元施工` : `地元施工実績を提示`;
+      reason = `災害協定に基づく出動実績と地元（柳川）での継続施工を地域貢献として訴求。`;
+    } else if(ev.id==="keikaku"){
+      gain = ev.pts;
+      pick = `${topProj.name} で採用した工程・品質確保の手法を転用`;
+      reason = `${topProj.detail} 本案件の制約（出水期・交通規制等）に合わせて工程表を自動下書き。`;
+    } else if(ev.id==="anzen"){
+      gain = ev.pts;
+      pick = `濁水・粉じん対策、第三者災害防止のチェックリストを実績から引用`;
+      reason = `過去工事で苦情ゼロ・環境基準遵守の実績を安全環境計画の根拠に。`;
+    }
+    got+=gain;
+    crits.push({lab:ev.lab, pts:ev.pts, gain, pick, reason, flag});
+  });
+
+  const pct = max>0?Math.round(got/max*100):0;
+  // 100点満点換算 → 発注機関のリアルな加算点満点に換算
+  const realMax = (REAL_MAX[agency]||{kani:20,hyojun:35})[type];
+  const realGot = (pct/100*realMax);
+
+  // ドラフト本文
+  const draft =
+`【件名】${kindLabel}　技術提案書（ドラフト）
+【発注機関】${agency}
+─────────────────────────
+
+▍企業の同種工事施工実績
+当社は ${topProj.name}（${topProj.client}発注・${topProj.year}年・${topProj.amount}）をはじめ、${KINDS[kindKey].label}分野で同種工事を継続的に施工してまいりました。${topProj.detail}
+
+▍配置予定技術者
+本工事には ${topEng.name}（${topEng.role}・${topEng.lic}${topEng.cpd?"・CPD認定":""}）を配置します。${topEng.hist}の実績を有し、${topEng.note}。
+
+▍施工上の工夫（品質・安全・環境）
+過去同種工事で実施した工程管理および環境保全対策を本工事の条件に合わせて適用し、出水期・近隣供用への影響を最小化します。
+
+▍地域への貢献
+当社は柳川市を拠点に地元施工を重ね、災害協定に基づく緊急出動の実績を有します。地域の安全・安心に継続して寄与します。`;
+
+  // 描画
+  const out=document.getElementById("output");
+  out.innerHTML="";
+  out.appendChild(el(`<div class="score-head">
+    <div class="score-big">${got}<small>/ ${max}点</small></div>
+    <div class="score-meta">技術評価 達成度 <b>${pct}%</b><br>
+    実配点換算 想定加算点 <b>${realGot.toFixed(1)} / ${realMax}点</b>（${agency.replace(/（.*）/,"")}・${type==="kani"?"簡易型":"標準型"}）</div>
+  </div>`));
+
+  /* ===== ドライブから評価する指標 ===== */
+  const req=getReq();
+  const kpis=[];
+  // 工事点数（成績評定点・竣工後に付与）
+  kpis.push({t:"工事点数（成績評定点）", v:`${topProj.score}<small> 点</small>`, pct:topProj.score, ok:topProj.score>=75,
+    judge:topProj.score>=80?"高評点の完工実績で訴求":"基準は満たすが上積み余地"});
+  // 技術者点数（配置能力／10点満点の社内指標）
+  kpis.push({t:"技術者点数（代表技術者）", v:`${topEng.point}<small> / 10点</small>`, pct:topEng.point*10, ok:topEng.point>=7,
+    judge:`${topEng.name}（${topEng.lic}）を配置`});
+  // ボリューム
+  const best=projMetric(topProj, req);
+  const volOk=best>=req.val;
+  kpis.push({t:`ボリューム（${req.label}）`, v:`実績 ${best.toLocaleString()}<small> ${req.unit}</small>`, pct:Math.min(100,Math.round(best/req.val*100)), ok:volOk,
+    judge:volOk?`要件 ${req.val.toLocaleString()}${req.unit} を充足`:`要件 ${req.val.toLocaleString()}${req.unit} に不足`});
+  // 工事種類
+  const exactKind=topProj.kind===kindKey;
+  kpis.push({t:"工事種類の一致", v:exactKind?"完全同種":"同系統", pct:exactKind?100:65, ok:exactKind,
+    judge:exactKind?`${KINDS[kindKey].label} と一致`:`同系統で代替（要 補強）`});
+  // ゲート空間面積（鋼構造物のみ）
+  if(kindKey==="steel"){
+    const gp=PROJECTS.filter(p=>p.gate).sort((a,b)=>b.gate-a.gate)[0];
+    const gateOk=gp&&gp.gate>=req.val;
+    kpis.push({t:"ゲート空間面積", v:gp?`${gp.gate}<small> m2</small>`:"実績なし", pct:gp?Math.min(100,Math.round(gp.gate/req.val*100)):0, ok:!!gateOk,
+      judge:gp?(gateOk?`要件 ${req.val}m2 を充足`:`要件 ${req.val}m2 に不足`):"ゲート実績の補完が必要"});
+  }
+  // 舗装 延長・新設区分（舗装のみ）
+  if(kindKey==="pave"){
+    const want=req.pave;
+    const pp=PROJECTS.find(p=>p.kind==="pave"&&p.pave===want);
+    kpis.push({t:`舗装区分（${want}）`, v:pp?`${want} 実績あり`:`${want} 実績なし`, pct:pp?100:40, ok:!!pp,
+      judge:pp?`${pp.name}（${pp.vol.area.toLocaleString()}m2）`:`${want}区分の実績が手薄`});
+  }
+  const kpiHtml=kpis.map(k=>`<div class="kpi ${k.ok?"ok":"ng"}">
+    <div class="kt">${k.t}</div>
+    <div class="kv">${k.v}</div>
+    <div class="bar"><i style="width:${k.pct}%"></i></div>
+    <div class="judge">${k.ok?"○ ":"△ "}${k.judge}</div>
+  </div>`).join("");
+  out.appendChild(el(`<div><div class="ds-h" style="margin:6px 0 6px">ドライブから評価した指標</div><div class="kpis">${kpiHtml}</div></div>`));
+
+  crits.forEach(c=>{
+    out.appendChild(el(`<div class="crit">
+      <div class="ch"><b>${c.lab}</b><span class="gain">+${c.gain} / ${c.pts}点</span></div>
+      <div class="cb">
+        <div class="pick"><span class="k">採用する実績</span><span class="v">${c.pick}</span></div>
+        <div class="reason">${c.reason}</div>
+        ${c.flag?`<div class="flag">注意：${c.flag}</div>`:""}
+      </div>
+    </div>`));
+  });
+
+  const dbox=el(`<div class="draft">
+    <h3>技術提案書ドラフト（そのまま様式へ流し込み可）<span class="cp" id="cpBtn">本文をコピー</span></h3>
+    <div class="dtext" id="draftText">${draft.replace(/▍(.+)/g,'<h4>$1</h4>')}</div>
+  </div>`);
+  out.appendChild(dbox);
+
+  // 提出様式の技術提案書を作成するボタン
+  out.appendChild(el(`<button class="btn" id="makeDocBtn" style="margin-top:14px;background:var(--navy)">提出様式の技術提案書を作成する（印刷・PDF保存）</button>`));
+  out.appendChild(el(`<div class="note">※ 配点・達成度は評価項目から自動試算した目安です。実配点換算は発注機関の加算点満点に合わせています。最終的な提案文と添付書類は技術者が監修してから提出してください。完全同種の実績が手薄な項目は「注意」として明示し、補完策を提示します。</div>`));
+
+  document.getElementById("cpBtn").onclick=()=>{
+    navigator.clipboard?.writeText(draft);
+    const b=document.getElementById("cpBtn"); b.textContent="コピーしました"; setTimeout(()=>b.textContent="本文をコピー",1500);
+  };
+
+  // 提案書用にデータを保持
+  const picks = projRank.filter(x=>x.s>0).slice(0,3).map(x=>x.p);
+  LAST = {agency, kindKey, kindLabel, type, topProj, topEng, picks, crits, got, max, pct, realGot, realMax, req, draft};
+  document.getElementById("makeDocBtn").onclick=()=>buildProposalDoc();
+
+  collectDrawings(kindKey);
+  out.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+/* ============ 提出様式の技術提案書を生成（印刷・PDF保存） ============ */
+let LAST=null;
+const COMPANY={name:"堤工業株式会社", addr:"福岡県柳川市下宮永町620", tel:"0944-74-0223"};
+function buildProposalDoc(){
+  if(!LAST) return;
+  const L=LAST;
+  const dwgRows=CUR_DWGS.map((d,i)=>`<tr><td>${i+1}</td><td>${d.name}</td><td>${d.src}</td></tr>`).join("");
+  const after=CUR_DWGS.some(d=>d.mbAfter!=null);
+  const totalAfter=CUR_DWGS.reduce((s,d)=>s+(d.mbAfter!=null?d.mbAfter:d.mb),0);
+  const dwgNote = CUR_DWGS.length? `添付図面 ${CUR_DWGS.length}点／合計 ${totalAfter.toFixed(1)}MB${after?"（圧縮後）":""}。電子入札の添付容量上限に合わせ自動圧縮・必要に応じ分割します。` : "—";
+  const pickRows=L.picks.map(p=>{
+    const vol = p.vol?(p.vol.type==="length"?`L=${p.vol.val}m`:p.vol.type==="volume"?`${p.vol.val.toLocaleString()}m3`:p.vol.area?`${p.vol.area.toLocaleString()}m2`:"—"):"—";
+    return `<tr><td>${p.name}</td><td>${p.client}</td><td>${p.year}年</td><td>${p.amount}</td><td>${vol}${p.gate?`／ゲート${p.gate}m2`:""}</td><td>${p.score}点${p.grade.includes("表彰")?"・優良表彰":""}</td></tr>`;
+  }).join("");
+  const critRows=L.crits.map(c=>`<tr><td>${c.lab}</td><td style="text-align:center">${c.gain} / ${c.pts}</td><td>${c.pick}</td></tr>`).join("");
+
+  const w=window.open("","_blank");
+  if(!w){ alert("ポップアップがブロックされました。許可してください。"); return; }
+  w.document.write(`<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><title>技術提案書｜${COMPANY.name}</title>
+  <style>
+    @page{size:A4;margin:18mm 16mm;}
+    *{box-sizing:border-box;}
+    body{font-family:"Yu Mincho","游明朝",YuMincho,"Hiragino Mincho ProN",serif;color:#15212e;font-size:11pt;line-height:1.8;margin:0;}
+    .sheet{max-width:182mm;margin:0 auto;padding:10mm 0;}
+    .cover{text-align:center;padding:30mm 0 24mm;border-bottom:2px solid #1d3a5f;}
+    .cover .doc{font-size:24pt;letter-spacing:.5em;font-weight:700;margin-bottom:8mm;}
+    .cover .case{font-size:13pt;margin:4mm 0;}
+    .cover .agency{font-size:11pt;color:#33495f;}
+    .cover .meta{margin-top:18mm;font-size:11pt;line-height:2.1;}
+    .cover .meta b{font-size:13pt;}
+    h2.sec{font-size:13pt;border-left:5px solid #c2792b;padding-left:10px;margin:10mm 0 4mm;color:#1d3a5f;}
+    p{margin:2mm 0;}
+    table{width:100%;border-collapse:collapse;margin:3mm 0;font-size:10pt;}
+    th,td{border:1px solid #b9c4cf;padding:5px 8px;text-align:left;vertical-align:top;}
+    th{background:#eef2f6;font-weight:700;}
+    .score-tbl td.n{text-align:center;font-weight:700;}
+    .seal{margin-top:6mm;text-align:right;font-size:11pt;line-height:2;}
+    .note{font-size:8.5pt;color:#6b7b8a;margin-top:12mm;border-top:1px solid #d9e0e7;padding-top:3mm;}
+    .toolbar{position:fixed;top:0;left:0;right:0;background:#1d3a5f;color:#fff;padding:8px 14px;font-family:sans-serif;font-size:13px;display:flex;gap:10px;align-items:center;}
+    .toolbar button{font:inherit;background:#c2792b;color:#fff;border:none;border-radius:5px;padding:7px 16px;cursor:pointer;font-weight:700;}
+    .toolbar span{opacity:.85;}
+    @media print{.toolbar{display:none;} .sheet{padding:0;}}
+    .pb{page-break-before:always;}
+  </style></head><body>
+  <div class="toolbar"><button onclick="window.print()">印刷 / PDF保存</button><span>ブラウザの「PDFに保存」で提出様式の技術提案書になります</span></div>
+  <div class="sheet">
+    <div class="cover">
+      <div class="doc">技 術 提 案 書</div>
+      <div class="case">${L.kindLabel}</div>
+      <div class="agency">${L.agency}　御中</div>
+      <div class="meta">
+        想定 技術評価点（加算点）　<b>${L.realGot.toFixed(1)} / ${L.realMax} 点</b>（${L.type==="kani"?"簡易型":"標準型"}）<br>
+        ${COMPANY.name}<br>${COMPANY.addr}　TEL ${COMPANY.tel}
+      </div>
+    </div>
+
+    <h2 class="sec">1. 評価項目への対応方針</h2>
+    <p>本工事の総合評価項目に対し、当社の竣工実績および配置技術者の能力をもとに、以下のとおり対応いたします。各項目で最も評価される実績を選定しています。</p>
+    <table class="score-tbl"><tr><th>評価項目</th><th>想定獲得 / 配点</th><th>根拠とする実績・技術者</th></tr>${critRows}</table>
+
+    <h2 class="sec">2. 企業の同種工事施工実績</h2>
+    <p>当社は ${KINDS[L.kindKey].label} 分野において、以下の同種工事を完成させ、いずれも良好な工事成績評定を得ています。</p>
+    <table><tr><th>工事名</th><th>発注者</th><th>完成</th><th>請負額</th><th>規模</th><th>成績・表彰</th></tr>${pickRows}</table>
+
+    <h2 class="sec">3. 配置予定技術者（代表技術者）</h2>
+    <table><tr><th>氏名</th><th>立場</th><th>保有資格</th><th>同種工事実績</th></tr>
+      <tr><td>${L.topEng.name}</td><td>${L.topEng.role}</td><td>${L.topEng.lic}${L.topEng.cpd?"／CPD認定":""}</td><td>${L.topEng.hist}</td></tr></table>
+    <p>${L.topEng.note}。本工事に専任で配置し、品質・工程・安全を統括します。</p>
+
+    <h2 class="sec">4. 施工上の工夫（品質・工程・安全・環境）</h2>
+    <p>${L.topProj.detail} これら同種工事で確立した工程管理および品質・環境保全の手法を、本工事の現場条件（出水期・交通規制・近隣供用等）に適合させて適用し、第三者災害ゼロ・環境基準の遵守を徹底します。</p>
+
+    <h2 class="sec">5. 地域への貢献</h2>
+    <p>当社は柳川市を拠点に地元施工を継続し、災害協定に基づく緊急出動の実績を有します。地域の安全・安心の確保に継続して寄与いたします。</p>
+
+    <h2 class="sec">6. 添付図面</h2>
+    <p>${dwgNote}</p>
+    <table><tr><th>No</th><th>図面名</th><th>出典工事</th></tr>${dwgRows||'<tr><td colspan="3">—</td></tr>'}</table>
+
+    <div class="seal">上記のとおり提案いたします。<br>${COMPANY.name}<br>代表者　　　　　　　　　印</div>
+    <div class="note">本書は「入札 技術提案アシスト」（株式会社サファリテック）が社内ドライブの実績データから自動生成したドラフトです。掲載の実績・点数は説明用のサンプルであり、実在の入札・成績ではありません。提出前に技術者の監修を行ってください。</div>
+  </div>
+  </body></html>`);
+  w.document.close();
+}
+
+/* ============ 図面の自動収集 ＆ 容量圧縮 ============ */
+const LIMIT_MB=10;
+let CUR_DWGS=[];   // {name, src, mb, mbAfter}
+function collectDrawings(kindKey){
+  const fam=[kindKey,...KINDS[kindKey].family];
+  CUR_DWGS=[];
+  PROJECTS.filter(p=>fam.includes(p.kind)).forEach(p=>{
+    (p.dwgs||[]).forEach(d=>CUR_DWGS.push({name:d.name, src:p.name, mb:d.mb, dpiHeavy:d.dpiHeavy, mbAfter:null}));
+  });
+  // 同系統で重複しがちな図面名は1点に集約（最大サイズを残す）
+  const seen={};
+  CUR_DWGS=CUR_DWGS.filter(d=>{ if(seen[d.name]){return false;} seen[d.name]=1; return true; });
+  renderDwgList();
+  updateGauge();
+  const btn=document.getElementById("compBtn");
+  btn.disabled=CUR_DWGS.length===0;
+  btn.textContent=LIMIT_MB+"MB以下に自動圧縮";
+  document.getElementById("compLog").innerHTML="";
+}
+function sumMb(after){ return CUR_DWGS.reduce((s,d)=>s+((after&&d.mbAfter!=null)?d.mbAfter:d.mb),0); }
+function renderDwgList(){
+  const wrap=document.getElementById("dwgList");
+  if(CUR_DWGS.length===0){ wrap.innerHTML='<div class="empty" style="text-align:center;color:var(--muted);font-size:13px;">該当図面なし</div>'; return; }
+  wrap.innerHTML="";
+  CUR_DWGS.forEach(d=>{
+    const compressed=d.mbAfter!=null;
+    const szHtml=compressed
+      ? `<span>${d.mb.toFixed(1)}</span><span class="arrow">→</span><span class="after">${d.mbAfter.toFixed(1)} MB</span>`
+      : `${d.mb.toFixed(1)} MB`;
+    wrap.appendChild(el(`<div class="dwgrow ${d.dpiHeavy?"heavy":""}">
+      <div class="fi">PDF</div>
+      <div class="nm">${d.name}<small>出典：${d.src}</small></div>
+      <div class="sz">${szHtml}</div>
+    </div>`));
+  });
+}
+function updateGauge(packets){
+  const after=CUR_DWGS.some(d=>d.mbAfter!=null);
+  const total=sumMb(after);
+  document.getElementById("gTotal").textContent=total.toFixed(1)+" MB"+(packets>1?`（${packets}分割）`:"");
+  document.getElementById("limitVal").textContent=LIMIT_MB;
+  const track=document.getElementById("gTrack");
+  const fill=document.getElementById("gFill");
+  // 分割後は各添付が上限内＝適合とみなす。未圧縮で合計が上限超なら警告色。
+  const fits = after ? (packets>1 || total<=LIMIT_MB) : (total<=LIMIT_MB);
+  fill.style.width=Math.min(100,total/LIMIT_MB*100)+"%";
+  track.classList.toggle("over", !fits);
+  track.classList.toggle("under", fits);
+  document.getElementById("cBefore").textContent=sumMb(false).toFixed(1)+" MB";
+  document.getElementById("cAfter").textContent=after?(sumMb(true).toFixed(1)+" MB"+(packets>1?` ／ ${packets}添付`:"")):"— MB";
+}
+document.getElementById("compBtn").addEventListener("click",()=>{
+  // 圧縮シミュレーション：高解像度スキャンPDFは圧縮率高、ベクター主体の軽い図面は低圧縮。
+  let factorHeavy=0.40, factorLight=0.85; // 第1段階：画像ダウンサンプリング
+  const apply=()=>CUR_DWGS.forEach(d=>{ d.mbAfter=+(d.mb*(d.dpiHeavy?factorHeavy:factorLight)).toFixed(2); });
+  apply();
+  const log=["画像解像度を 600dpi → 200dpi にダウンサンプリング","フォント埋め込みと重複オブジェクトを最適化"];
+  // 1ファイルでも上限を超える図面が残る場合のみ、画質を保てる範囲で追加圧縮
+  if(CUR_DWGS.some(d=>d.mbAfter>LIMIT_MB)){ factorHeavy=0.30; apply(); log.push("上限超の図面をグレースケール化して再圧縮"); }
+
+  const before=sumMb(false), afterT=sumMb(true);
+  log.push(`合計 ${before.toFixed(1)}MB → ${afterT.toFixed(1)}MB（削減 ${(100-afterT/before*100).toFixed(0)}%）`);
+
+  // 圧縮後でも合計が上限を超える場合は、各添付が上限内に収まるよう自動でまとめ分割（ビンパッキング）
+  let packets=1;
+  if(afterT>LIMIT_MB){
+    const sorted=[...CUR_DWGS].sort((a,b)=>b.mbAfter-a.mbAfter);
+    const bins=[];
+    sorted.forEach(d=>{
+      let bin=bins.find(b=>b+d.mbAfter<=LIMIT_MB);
+      if(bin===undefined){ bins.push(d.mbAfter); } else { bins[bins.indexOf(bin)]+=d.mbAfter; }
+    });
+    packets=bins.length;
+    log.push(`合計が ${LIMIT_MB}MB を超えるため、${packets}つの添付（各 ${LIMIT_MB}MB 以内）に自動分割`);
+  } else {
+    log.push(`電子入札の添付上限 ${LIMIT_MB}MB 以内に 1ファイルで収まりました`);
+  }
+
+  renderDwgList(); updateGauge(packets);
+  document.getElementById("compLog").innerHTML=log.map(l=>`<div>${l}</div>`).join("");
+  document.getElementById("compBtn").textContent="圧縮済み（再実行可）";
+});
+
+/* init */
+renderDrive();
+renderEval();
+renderVolReq();
+document.getElementById("evtype").addEventListener("change",renderEval);
+document.getElementById("kind").addEventListener("change",renderVolReq);
+document.getElementById("genBtn").addEventListener("click",generate);
+</script>
+</body>
+</html>
