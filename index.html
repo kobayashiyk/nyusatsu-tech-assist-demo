@@ -60,6 +60,30 @@
   .volrow input{flex:1;}
   .volrow .un{flex:none;color:var(--muted);font-size:13px;}
 
+  /* ドラッグ＆ドロップ取り込み */
+  .drop{border:2px dashed #c2cdd8;border-radius:11px;padding:22px 18px;text-align:center;background:#f8fafc;transition:.15s;cursor:pointer;}
+  .drop.drag{border-color:var(--accent);background:#fffaf3;}
+  .drop .dicon{font-size:28px;color:#9fb0c0;line-height:1;}
+  .drop b{display:block;font-size:14.5px;margin:8px 0 2px;}
+  .drop .sm{font-size:12.5px;color:var(--muted);}
+  .drop .urlrow{display:flex;gap:8px;max-width:520px;margin:12px auto 0;}
+  .drop .urlrow input{flex:1;font-size:13.5px;padding:9px 11px;}
+  .drop .urlrow button{flex:none;background:var(--navy);color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:13.5px;font-weight:700;cursor:pointer;}
+  .drop .urlrow button:hover{background:var(--navy-d);}
+  .drop small{display:block;font-size:11.5px;color:var(--muted);margin-top:10px;}
+  .drop-load{display:flex;align-items:center;justify-content:center;gap:12px;font-size:14px;color:var(--slate);font-weight:700;padding:8px;}
+  .spin{width:22px;height:22px;border:3px solid #d9e0e7;border-top-color:var(--navy);border-radius:50%;animation:sp .7s linear infinite;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .parsed{border:1px solid #bfe0cc;background:var(--good-bg);border-radius:10px;padding:14px 16px;margin-top:14px;}
+  .parsed .ph{font-size:13px;font-weight:700;color:var(--good);display:flex;align-items:center;gap:7px;margin-bottom:8px;}
+  .parsed .pr{display:flex;font-size:13px;padding:3px 0;border-top:1px dashed #cbe3d4;}
+  .parsed .pr:first-of-type{border-top:none;}
+  .parsed .pk{flex:none;width:120px;color:var(--slate);font-weight:700;}
+  .parsed .pv{flex:1;color:var(--ink);}
+  .orsep{text-align:center;color:var(--muted);font-size:12px;margin:16px 0 2px;letter-spacing:.05em;}
+  .hl{animation:hl 1.4s ease;}
+  @keyframes hl{0%{background:#fff7e6;box-shadow:0 0 0 3px rgba(194,121,43,.25);}100%{background:#fff;box-shadow:none;}}
+
   /* ナビ */
   .nav{display:flex;justify-content:space-between;align-items:center;margin-top:24px;gap:12px;}
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#fff;border:none;
@@ -148,6 +172,25 @@
   .note{font-size:11.5px;color:var(--muted);margin-top:14px;line-height:1.7;}
   .ready{display:flex;align-items:center;gap:10px;background:var(--good-bg);border:1px solid #bfe0cc;border-radius:9px;padding:12px 15px;font-size:13.5px;color:var(--good);font-weight:700;margin-top:14px;}
 
+  /* 原本プレビュー モーダル */
+  .modal{position:fixed;inset:0;z-index:50;display:none;}
+  .modal.show{display:block;}
+  .modal-bg{position:absolute;inset:0;background:rgba(20,33,46,.55);}
+  .modal-box{position:relative;max-width:680px;margin:34px auto;background:#fff;border-radius:12px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 16px 48px rgba(0,0,0,.3);}
+  .modal-head{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--line);}
+  .modal-head b{font-size:15px;flex:1;}
+  .modal-head button{background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;}
+  .modal-sub{font-size:12.5px;color:var(--slate);padding:10px 18px 0;}
+  .modal-sub mark{background:#fff1c2;padding:0 3px;}
+  .paper{margin:12px 18px 18px;overflow:auto;border:1px solid #d9e0e7;border-radius:8px;background:#fcfcfa;
+    padding:22px 26px;font-family:"Yu Mincho","游明朝",serif;font-size:12.5px;line-height:2;color:#1d2b39;}
+  .paper h3{text-align:center;font-size:15px;letter-spacing:.3em;margin:0 0 4px;}
+  .paper .pdate{text-align:right;font-size:11px;color:var(--muted);margin-bottom:14px;}
+  .paper .pline{display:flex;gap:8px;margin:3px 0;}
+  .paper .pno{flex:none;width:20px;color:var(--slate);}
+  .paper mark{background:#fff1c2;padding:0 3px;border-radius:2px;font-weight:700;}
+  .paper .seal2{text-align:right;margin-top:16px;}
+
   footer{margin-top:30px;text-align:center;color:var(--muted);font-size:11.5px;}
 </style>
 </head>
@@ -174,7 +217,24 @@
   <section class="step" id="step1">
     <div class="card">
       <h2>① 新規案件を入力</h2>
-      <p class="sub">これから入札する案件の条件を入れてください。社内ドライブの実績から、最も有利になる組み合わせを探します。</p>
+      <p class="sub">入札公告のPDFを放り込むか、直接入力してください。社内ドライブの実績から、最も有利になる組み合わせを探します。</p>
+
+      <div class="drop" id="drop">
+        <input type="file" id="fileInput" accept=".pdf" style="display:none">
+        <div id="dropIdle">
+          <div class="dicon">⬇</div>
+          <b>入札公告・特記仕様書のPDFをドラッグ＆ドロップ</b>
+          <div class="sm">放り込むと、発注機関・工種・規模要件・評価方式を自動で読み取ります</div>
+          <div class="urlrow" onclick="event.stopPropagation()">
+            <input id="srcUrl" placeholder="または案件ページのアドレスを貼り付け（https://…）">
+            <button id="readUrl">読み取り</button>
+          </div>
+          <small>※ デモではファイル名・アドレスから推定します。本番は公告本文をAIが抽出します</small>
+        </div>
+        <div class="drop-load" id="dropLoad" style="display:none"><div class="spin"></div>公告を読み取り中…</div>
+      </div>
+      <div class="parsed" id="parsed" style="display:none"></div>
+      <div class="orsep">— または下記に直接入力・修正 —</div>
 
       <div class="row2">
         <div><label>発注機関</label>
@@ -301,6 +361,15 @@
   <footer><b>入札 技術提案アシスト</b> 導入デモ ／ 株式会社サファリテック ｜ 本デモのデータは説明用のサンプルです（実在の入札・実績ではありません）</footer>
 </div>
 
+<div class="modal" id="pvModal">
+  <div class="modal-bg" id="pvBg"></div>
+  <div class="modal-box">
+    <div class="modal-head"><b>取り込んだ公告のプレビュー</b><button id="pvClose">×</button></div>
+    <div class="modal-sub"><mark>黄色</mark>の箇所が自動で読み取った項目です。フォームの内容と照らし合わせて確認してください。</div>
+    <div class="paper" id="pvPaper"></div>
+  </div>
+</div>
+
 <script>
 /* ===================== データ ===================== */
 const KINDS = {
@@ -417,6 +486,94 @@ function syncVolUI(){
   document.getElementById("paveWrap").style.display = S.kindKey==="pave"?"block":"none";
 }
 document.getElementById("kind").addEventListener("change",e=>{S.kindKey=e.target.value; syncVolUI();});
+
+/* ---- 公告PDF/URLの取り込み（ドラッグ＆ドロップ） ---- */
+let PARSED=null;
+/* リアルな読み取り値（工種別） */
+const PARSE_VOL = {river:320, bridge:2800, steel:42, dredge:25000, pave:8500};
+function parseSource(src){
+  const n=src||"";
+  let kind="river";
+  if(/橋|鋼橋|きょうりょう/.test(n)) kind="bridge";
+  if(/水門|ゲート|機場|鋼構造|樋門/.test(n)) kind="steel";
+  if(/しゅんせつ|浚渫|掘削|河道/.test(n)) kind="dredge";
+  if(/舗装|道路|アスファルト/.test(n)) kind="pave";
+  if(/護岸|築堤|河川/.test(n)) kind="river";
+  let agency="福岡県（県土整備部）";
+  if(/九州|地方整備局|国土交通|国交|mlit/i.test(n)) agency="国土交通省 九州地方整備局";
+  else if(/柳川/.test(n)) agency="柳川市";
+  else if(/道路公社/.test(n)) agency="福岡県 道路公社";
+  const evtype=/標準型/.test(n)?"hyojun":"kani";
+  const works={river:"沖端川 河川改修工事（築堤・護岸）",bridge:"県道○○線 橋梁補修工事（鋼橋）",
+    steel:"排水機場 水門設備設置工事（鋼構造物）",dredge:"矢部川 河道掘削・しゅんせつ工事",pave:"市道△△線 舗装打換え工事"};
+  // ファイル名に工事名らしさがあればそれを採用
+  let work=works[kind];
+  const base=n.replace(/\.(pdf|docx?|xlsx?)$/i,"").replace(/^https?:\/\/[^/]+\//i,"");
+  if(/工事|改修|補修|設置|掘削|舗装|復旧/.test(base) && base.length<=40) work=base;
+  const r=VOLREQ[kind];
+  return {kind, agency, evtype, work, place:"福岡県柳川市", source:src||"入札公告.pdf",
+    volVal:PARSE_VOL[kind], volLabel:r.vl, volUnit:r.unit.replace(" 以上",""), evLabel:evtype==="kani"?"簡易型":"標準型"};
+}
+function setVal(id,v){const e=document.getElementById(id);e.value=v;e.classList.remove("hl");void e.offsetWidth;e.classList.add("hl");}
+function applyParsed(d){
+  PARSED=d;
+  setVal("agency",d.agency);
+  setVal("evtype",d.evtype);
+  const k=document.getElementById("kind"); k.value=d.kind; S.kindKey=d.kind; syncVolUI();
+  k.classList.remove("hl");void k.offsetWidth;k.classList.add("hl");
+  setVal("volVal",d.volVal);
+  if(d.kind==="pave"){document.getElementById("paveReq").value="打換え";}
+  // 抽出結果カード
+  const p=document.getElementById("parsed");
+  p.style.display="block";
+  p.innerHTML=`<div class="ph">✓ 公告から読み取りました（${d.source}）</div>
+    <div class="pr"><div class="pk">発注機関</div><div class="pv">${d.agency}</div></div>
+    <div class="pr"><div class="pk">工事名</div><div class="pv">${d.work}</div></div>
+    <div class="pr"><div class="pk">工種</div><div class="pv">${KINDS[d.kind].label}</div></div>
+    <div class="pr"><div class="pk">規模要件</div><div class="pv">${d.volLabel} ${d.volVal.toLocaleString()} ${d.volUnit} 以上</div></div>
+    <div class="pr"><div class="pk">総合評価</div><div class="pv">${d.evLabel}</div></div>
+    <button class="btn" id="pvOpen" style="margin-top:12px;padding:9px 18px;font-size:13.5px;background:var(--navy)">取り込んだ公告をプレビューして確認</button>`;
+  document.getElementById("pvOpen").onclick=openPreview;
+  document.getElementById("dropIdle").style.display="block";
+  document.getElementById("dropLoad").style.display="none";
+}
+function ingest(src){
+  document.getElementById("dropIdle").style.display="none";
+  document.getElementById("dropLoad").style.display="flex";
+  document.getElementById("parsed").style.display="none";
+  setTimeout(()=>applyParsed(parseSource(src)), 850);
+}
+(function(){
+  const drop=document.getElementById("drop"), fi=document.getElementById("fileInput");
+  ["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag");}));
+  ["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
+  drop.addEventListener("drop",e=>{const f=e.dataTransfer.files[0];ingest(f?f.name:(e.dataTransfer.getData("text")||""));});
+  drop.addEventListener("click",e=>{if(e.target.closest(".urlrow"))return;fi.click();});
+  fi.addEventListener("change",()=>{if(fi.files[0])ingest(fi.files[0].name);});
+  document.getElementById("readUrl").onclick=()=>{const u=document.getElementById("srcUrl").value.trim();ingest(u||"入札公告.pdf");};
+})();
+
+/* ---- 原本プレビュー（擬似公告にハイライト） ---- */
+function openPreview(){
+  const d=PARSED; if(!d) return;
+  document.getElementById("pvPaper").innerHTML=
+    `<h3>入 札 公 告</h3>
+     <div class="pdate">（条件付一般競争入札）</div>
+     <div class="pline"><span class="pno"></span>下記のとおり一般競争入札に付します。</div>
+     <div class="pline"><span class="pno">1</span>発注機関　<mark>${d.agency}</mark></div>
+     <div class="pline"><span class="pno">2</span>工事名　　<mark>${d.work}</mark></div>
+     <div class="pline"><span class="pno">3</span>工事場所　${d.place} 地内</div>
+     <div class="pline"><span class="pno">4</span>工種　　　<mark>${KINDS[d.kind].label}</mark></div>
+     <div class="pline"><span class="pno">5</span>工事概要　${d.volLabel} <mark>${d.volVal.toLocaleString()} ${d.volUnit}</mark> 以上を含む同種工事</div>
+     <div class="pline"><span class="pno">6</span>入札方式　総合評価落札方式（<mark>${d.evLabel}</mark>）</div>
+     <div class="pline"><span class="pno">7</span>評価項目　企業の同種工事施工実績、配置予定技術者の能力、工事成績・表彰、地域貢献 ほか</div>
+     <div class="pline"><span class="pno">8</span>参加資格　当該工種の建設業許可を有し、同種工事の施工実績を有する者</div>
+     <div class="seal2">${d.agency}</div>`;
+  document.getElementById("pvModal").classList.add("show");
+}
+function closePreview(){document.getElementById("pvModal").classList.remove("show");}
+document.getElementById("pvClose").onclick=closePreview;
+document.getElementById("pvBg").onclick=closePreview;
 document.getElementById("to2").onclick=()=>{
   S.agency=document.getElementById("agency").value;
   S.evtype=document.getElementById("evtype").value;
